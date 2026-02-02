@@ -166,9 +166,9 @@
             <!-- 结果卡片模板 -->
             <template id="itemTemplate">
               <div
-                class="group rounded-2xl sm:rounded-3xl bg-white border border-[#F3F4F6] px-4 sm:px-5 py-3.5 sm:py-4 flex flex-col gap-1.5 sm:gap-2 transition-all duration-200 ease-out hover:border-slate-200 hover:soft-shadow-subtle"
+                class="group rounded-2xl sm:rounded-3xl bg-white border border-[#F3F4F6] px-4 sm:px-5 py-3.5 sm:py-4 flex flex-col gap-1.5 sm:gap-2 transition-all duration-200 ease-out hover:border-slate-200 hover:soft-shadow-subtle relative"
               >
-                <div class="flex items-baseline justify-between gap-2">
+                <div class="flex items-baseline justify-between gap-2 pr-7 sm:pr-8">
                   <h2 class="text-[13px] sm:text-sm font-normal tracking-[0.05em] text-slate-900">
                     <span class="item-name"></span>
                   </h2>
@@ -176,6 +176,14 @@
                     <span class="opacity-80">位置坐标</span>
                   </span>
                 </div>
+                <!-- 操作按钮 -->
+                <button
+                  type="button"
+                  class="item-more absolute top-3.5 sm:top-4 right-3.5 sm:right-4 inline-flex items-center justify-center rounded-full border border-slate-200/70 bg-white/90 text-slate-300 hover:text-slate-600 hover:border-slate-300 h-6 w-6 sm:h-7 sm:w-7 transition-all duration-150 ease-out shadow-[0_6px_14px_rgba(15,23,42,0.06)]"
+                  aria-label="更多操作"
+                >
+                  <span class="text-[14px] leading-none">···</span>
+                </button>
                 <p class="text-[11px] sm:text-xs text-slate-500/90 font-light leading-relaxed">
                   <span class="item-location"></span>
                 </p>
@@ -314,11 +322,97 @@
       aria-live="polite"
     >
       <div
-        class="pointer-events-auto hidden max-w-md rounded-2xl bg-slate-900/95 text-slate-50 px-4 sm:px-5 py-3.5 sm:py-3 shadow-[0_18px_45px_rgba(15,23,42,0.45)] border border-slate-700/60 backdrop-blur"
+        class="pointer-events-auto hidden max-w-md rounded-2xl bg-slate-900/95 text-slate-50 px-4 sm:px-5 py-3.5 sm:py-3 shadow-[0_18px_45px_rgba(15,23,42,0.45)] border border-slate-700/60 backdrop-blur transition-opacity duration-250 ease-out"
       >
         <p class="text-xs sm:text-sm font-light leading-relaxed">
           Cluce 祝你生活愉快，再也不为找东西烦恼。
         </p>
+      </div>
+    </div>
+
+    <!-- 底部操作抽屉（编辑 / 删除） -->
+    <div
+      id="actionSheet"
+      class="fixed inset-0 z-40 hidden items-end justify-center bg-slate-900/10 backdrop-blur-[6px]"
+    >
+      <div
+        class="w-full max-w-md mx-auto px-3 pb-4 sm:pb-6"
+      >
+        <div
+          class="rounded-3xl bg-white/95 border border-slate-200/80 soft-shadow-subtle overflow-hidden translate-y-0 transition-transform duration-200 ease-out"
+        >
+          <div class="px-4 sm:px-5 pt-3 pb-1 flex items-center justify-between">
+            <p class="text-[11px] text-slate-400 font-light tracking-[0.18em] uppercase">
+              该条记录
+            </p>
+            <button
+              id="closeActionSheet"
+              type="button"
+              class="flex h-7 w-7 items-center justify-center rounded-full border border-slate-200/80 text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-colors"
+            >
+              <span class="text-xs">×</span>
+            </button>
+          </div>
+          <button
+            id="actionEdit"
+            type="button"
+            class="w-full flex items-center justify-between px-4 sm:px-5 py-3.5 text-left text-[13px] sm:text-sm text-slate-800 font-light hover:bg-slate-50/80 transition-colors"
+          >
+            <span>编辑内容</span>
+            <span class="text-[11px] text-slate-400">⌘E</span>
+          </button>
+          <div class="border-t border-slate-100"></div>
+          <button
+            id="actionDelete"
+            type="button"
+            class="w-full flex items-center justify-between px-4 sm:px-5 py-3.5 text-left text-[13px] sm:text-sm text-rose-500 font-light hover:bg-rose-50/80 transition-colors"
+          >
+            <span>删除记录</span>
+            <span class="text-[11px] text-rose-300">慎重</span>
+          </button>
+        </div>
+        <button
+          id="cancelActionSheet"
+          type="button"
+          class="mt-2 w-full rounded-3xl bg-white/70 border border-slate-200/80 py-2.5 text-[12px] text-slate-500 font-light hover:bg-slate-50 transition-colors"
+        >
+          取消
+        </button>
+      </div>
+    </div>
+
+    <!-- 删除确认模态框 -->
+    <div
+      id="confirmDelete"
+      class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-900/25 backdrop-blur-sm"
+    >
+      <div
+        class="w-full max-w-xs sm:max-w-sm mx-4 rounded-3xl bg-white/96 border border-slate-200/80 soft-shadow-subtle px-5 sm:px-6 py-5 sm:py-6 space-y-3.5"
+      >
+        <div class="space-y-1.5">
+          <h3 class="text-sm sm:text-base font-light tracking-[0.16em] text-slate-900 uppercase">
+            确认删除？
+          </h3>
+          <p class="text-[11px] sm:text-xs text-slate-500 font-light leading-relaxed">
+            这条记录删除后将无法恢复，但你依然可以随时重新添加。请确认这不是一次误触操作。
+          </p>
+        </div>
+        <div class="pt-1 flex items-center justify-between gap-3">
+          <button
+            id="cancelDelete"
+            type="button"
+            class="flex-1 inline-flex items-center justify-center rounded-2xl border border-slate-200/90 bg-white px-3 py-2.5 text-[12px] text-slate-500 font-light hover:bg-slate-50 transition-colors"
+          >
+            再想想
+          </button>
+          <button
+            id="confirmDeleteBtn"
+            type="button"
+            class="flex-[1.4] inline-flex items-center justify-center rounded-2xl border border-rose-500/80 bg-rose-500 px-3 py-2.5 text-[12px] text-white font-light tracking-[0.12em] uppercase hover:bg-rose-600 transition-colors"
+          >
+            确认删除
+          </button>
+        </div>
       </div>
     </div>
 
@@ -377,10 +471,21 @@
         const signatureBtn = document.getElementById("signature");
         const rainbowLayer = document.getElementById("rainbowLayer");
         const toast = document.getElementById("toast").firstElementChild;
+        const actionSheet = document.getElementById("actionSheet");
+        const closeActionSheetBtn = document.getElementById("closeActionSheet");
+        const cancelActionSheetBtn = document.getElementById("cancelActionSheet");
+        const actionEditBtn = document.getElementById("actionEdit");
+        const actionDeleteBtn = document.getElementById("actionDelete");
+        const confirmDeleteModal = document.getElementById("confirmDelete");
+        const cancelDeleteBtn = document.getElementById("cancelDelete");
+        const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
 
         let allItems = [];
+        let filteredItems = [];
         let toastTimer = null;
         let rainbowTimer = null;
+        let currentActionIndex = null;
+        let isEditing = false;
 
         /** 从 localStorage 读取数据，并和预设合并 */
         function loadItems() {
@@ -419,16 +524,20 @@
           let matched = allItems;
 
           if (q) {
-            matched = allItems.filter((item) => {
-              const name = (item.name || "").toLowerCase();
-              const location = (item.location || "").toLowerCase();
-              const hint = (item.hint || "").toLowerCase();
-              return (
-                name.includes(q) ||
-                location.includes(q) ||
-                (hint && hint.includes(q))
-              );
-            });
+            matched = allItems
+              .map((item, index) => ({ item, index }))
+              .filter(({ item }) => {
+                const name = (item.name || "").toLowerCase();
+                const location = (item.location || "").toLowerCase();
+                const hint = (item.hint || "").toLowerCase();
+                return (
+                  name.includes(q) ||
+                  location.includes(q) ||
+                  (hint && hint.includes(q))
+                );
+              });
+          } else {
+            matched = allItems.map((item, index) => ({ item, index }));
           }
 
           resultsContainer.innerHTML = "";
@@ -440,12 +549,15 @@
             return;
           }
 
-          matched.forEach((item) => {
+          filteredItems = matched;
+
+          matched.forEach(({ item, index }) => {
             const node = itemTemplate.content.cloneNode(true);
             const nameEl = node.querySelector(".item-name");
             const locationEl = node.querySelector(".item-location");
             const hintWrapper = node.querySelector(".item-hint");
             const hintText = node.querySelector(".hint-text");
+            const moreBtn = node.querySelector(".item-more");
 
             nameEl.textContent = item.name;
             locationEl.textContent = item.location;
@@ -453,6 +565,13 @@
             if (item.hint && item.hint.trim()) {
               hintWrapper.classList.remove("hidden");
               hintText.textContent = item.hint;
+            }
+
+            if (moreBtn) {
+              moreBtn.addEventListener("click", (e) => {
+                e.stopPropagation();
+                openActionSheet(index);
+              });
             }
 
             fragment.appendChild(node);
@@ -476,6 +595,37 @@
           modal.classList.add("hidden");
           modal.classList.remove("flex");
           addForm.reset();
+          isEditing = false;
+          currentActionIndex = null;
+          const titleEl = modal.querySelector("h2");
+          const subtitleEl = modal.querySelector("p.text-[11px]");
+          if (titleEl) titleEl.textContent = "新增物品";
+          if (subtitleEl) {
+            subtitleEl.textContent = "把这件物品「固定」在你记忆的地图上。";
+          }
+        }
+
+        /** 打开 / 关闭操作抽屉 */
+        function openActionSheet(index) {
+          currentActionIndex = index;
+          actionSheet.classList.remove("hidden");
+          actionSheet.classList.add("flex");
+        }
+
+        function closeActionSheet() {
+          actionSheet.classList.add("hidden");
+          actionSheet.classList.remove("flex");
+        }
+
+        /** 删除确认模态 */
+        function openConfirmDelete() {
+          confirmDeleteModal.classList.remove("hidden");
+          confirmDeleteModal.classList.add("flex");
+        }
+
+        function closeConfirmDelete() {
+          confirmDeleteModal.classList.add("hidden");
+          confirmDeleteModal.classList.remove("flex");
         }
 
         /** Toast 展示 */
@@ -521,8 +671,10 @@
             searchInput.focus();
           });
 
-          // 打开模态
+          // 打开模态（新增）
           addButton.addEventListener("click", () => {
+            isEditing = false;
+            currentActionIndex = null;
             openModal();
           });
 
@@ -556,9 +708,75 @@
 
             if (!name || !location) return;
 
-            allItems.push({ name, location, hint });
+            if (isEditing && currentActionIndex !== null && allItems[currentActionIndex]) {
+              allItems[currentActionIndex] = { name, location, hint };
+            } else {
+              allItems.push({ name, location, hint });
+            }
             persistItems();
             closeModal();
+            renderList(searchInput.value);
+          });
+
+          // 操作抽屉交互
+          [closeActionSheetBtn, cancelActionSheetBtn].forEach((btn) => {
+            btn.addEventListener("click", () => {
+              closeActionSheet();
+            });
+          });
+
+          actionSheet.addEventListener("click", (e) => {
+            if (e.target === actionSheet) {
+              closeActionSheet();
+            }
+          });
+
+          actionEditBtn.addEventListener("click", () => {
+            if (currentActionIndex === null || !allItems[currentActionIndex]) return;
+            const item = allItems[currentActionIndex];
+            isEditing = true;
+
+            const titleEl = modal.querySelector("h2");
+            const subtitleEl = modal.querySelector("p.text-[11px]");
+            if (titleEl) titleEl.textContent = "编辑物品";
+            if (subtitleEl) {
+              subtitleEl.textContent = "更新这件物品的位置信息与提示。";
+            }
+
+            itemNameInput.value = item.name || "";
+            itemLocationInput.value = item.location || "";
+            itemHintInput.value = item.hint || "";
+
+            closeActionSheet();
+            openModal();
+          });
+
+          actionDeleteBtn.addEventListener("click", () => {
+            if (currentActionIndex === null || !allItems[currentActionIndex]) return;
+            closeActionSheet();
+            openConfirmDelete();
+          });
+
+          // 删除确认交互
+          cancelDeleteBtn.addEventListener("click", () => {
+            closeConfirmDelete();
+          });
+
+          confirmDeleteModal.addEventListener("click", (e) => {
+            if (e.target === confirmDeleteModal) {
+              closeConfirmDelete();
+            }
+          });
+
+          confirmDeleteBtn.addEventListener("click", () => {
+            if (currentActionIndex === null || !allItems[currentActionIndex]) {
+              closeConfirmDelete();
+              return;
+            }
+            allItems.splice(currentActionIndex, 1);
+            persistItems();
+            closeConfirmDelete();
+            currentActionIndex = null;
             renderList(searchInput.value);
           });
 
