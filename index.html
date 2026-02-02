@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>The Finder | 家庭搜索枢纽</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* 自定义极简滚动条（在支持的浏览器上） */
+      ::-webkit-scrollbar {
+        width: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #e5e7eb;
+        border-radius: 9999px;
+      }
+
+      /* 彩虹背景流转动画 */
+      @keyframes rainbowGlow {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      .rainbow-overlay {
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.6s ease;
+        background: radial-gradient(circle at 10% 20%, rgba(255, 0, 128, 0.18), transparent 55%),
+          radial-gradient(circle at 80% 0%, rgba(56, 189, 248, 0.18), transparent 55%),
+          radial-gradient(circle at 20% 80%, rgba(96, 165, 250, 0.22), transparent 55%),
+          radial-gradient(circle at 90% 70%, rgba(244, 114, 182, 0.2), transparent 60%);
+        background-size: 200% 200%;
+      }
+
+      .rainbow-overlay.active {
+        opacity: 1;
+        animation: rainbowGlow 6s ease-in-out infinite;
+      }
+
+      /* 极简淡影 */
+      .soft-shadow {
+        box-shadow: 0 18px 45px rgba(15, 23, 42, 0.14);
+      }
+
+      .soft-shadow-subtle {
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-[#FBFBFB] text-slate-900 antialiased selection:bg-slate-900/5">
+    <!-- 彩虹背景层 -->
+    <div
+      id="rainbowLayer"
+      class="rainbow-overlay fixed inset-0 z-0"
+    ></div>
+
+    <div class="relative z-10 flex min-h-screen flex-col">
+      <!-- 主体内容 -->
+      <main class="flex-1 flex items-center justify-center px-4 py-8 sm:py-12">
+        <div class="w-full max-w-xl sm:max-w-2xl lg:max-w-3xl mx-auto">
+          <!-- 标题与副标题 -->
+          <div class="mb-10 sm:mb-14 text-center space-y-3">
+            <div class="inline-flex items-center gap-2 rounded-full border border-slate-200/80 bg-white/70 px-3 py-1 soft-shadow-subtle backdrop-blur">
+              <span class="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_0_3px_rgba(16,185,129,0.35)]"></span>
+              <span class="text-[10px] uppercase tracking-[0.22em] text-slate-500">
+                家 · 庭 · 搜 · 索 · 枢 · 纽
+              </span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl md:text-4xl font-light tracking-[0.12em] text-slate-900">
+              THE FINDER
+            </h1>
+            <p class="text-xs sm:text-sm text-slate-500 font-light">
+              把生活里的每一件小物件，安放在一目了然的坐标系里。
+            </p>
+          </div>
+
+          <!-- 搜索卡片 -->
+          <section
+            class="rounded-3xl sm:rounded-[2.25rem] bg-white/80 border border-slate-200/80 soft-shadow-subtle backdrop-blur px-4 sm:px-6 md:px-8 py-5 sm:py-6 md:py-7 space-y-5 sm:space-y-6"
+          >
+            <!-- 搜索框 -->
+            <div class="relative">
+              <div
+                class="group flex items-center gap-3 sm:gap-4 rounded-[2rem] bg-white px-4 sm:px-5 py-3.5 sm:py-4 border border-slate-100 soft-shadow transition-all duration-300 ease-out focus-within:border-slate-200 focus-within:soft-shadow-subtle"
+              >
+                <!-- 搜索图标 -->
+                <div
+                  class="flex h-8 w-8 items-center justify-center rounded-full border border-slate-200/80 bg-slate-50/80 text-slate-400 transition-transform duration-300 ease-out group-focus-within:scale-105"
+                >
+                  <svg
+                    class="h-3.5 w-3.5"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.4"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <circle cx="11" cy="11" r="6" />
+                    <line x1="16.5" y1="16.5" x2="21" y2="21" />
+                  </svg>
+                </div>
+                <input
+                  id="searchInput"
+                  type="text"
+                  autocomplete="off"
+                  placeholder="你现在在找什么？例如：备用钥匙、发票、说明书……"
+                  class="peer flex-1 bg-transparent text-[13px] sm:text-sm tracking-[0.04em] font-light text-slate-900 placeholder:text-slate-300 outline-none"
+                />
+                <div class="hidden sm:flex items-center gap-2 text-[10px] text-slate-300 font-light">
+                  <span class="rounded-full border border-slate-200/80 px-2 py-[2px]">
+                    实时筛选
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 统计信息 -->
+            <div class="flex items-center justify-between text-[11px] text-slate-400 font-light">
+              <div>
+                <span id="resultCount">0</span>
+                <span class="ml-1">个结果</span>
+              </div>
+              <button
+                id="clearSearchBtn"
+                class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] border border-transparent text-slate-400 hover:text-slate-600 hover:border-slate-200/80 hover:bg-slate-50/60 transition-colors"
+                type="button"
+              >
+                <span>清空搜索</span>
+              </button>
+            </div>
+
+            <!-- 结果列表 -->
+            <div
+              id="resultsContainer"
+              class="max-h-[50vh] sm:max-h-[55vh] overflow-y-auto pr-1 space-y-3 sm:space-y-3.5"
+            >
+              <!-- 动态填充 -->
+            </div>
+
+            <!-- 空状态 -->
+            <template id="emptyStateTemplate">
+              <div class="flex flex-col items-center justify-center py-8 text-center text-slate-300 text-xs sm:text-[13px] font-light space-y-3">
+                <div
+                  class="h-10 w-10 rounded-full border border-dashed border-slate-200 flex items-center justify-center"
+                >
+                  <span class="text-base">＋</span>
+                </div>
+                <p>
+                  还没有为这个关键词记录任何物品。<br class="hidden sm:inline" />试着点击右下角的「＋」添加一条吧。
+                </p>
+              </div>
+            </template>
+
+            <!-- 结果卡片模板 -->
+            <template id="itemTemplate">
+              <div
+                class="group rounded-2xl sm:rounded-3xl bg-white border border-[#F3F4F6] px-4 sm:px-5 py-3.5 sm:py-4 flex flex-col gap-1.5 sm:gap-2 transition-all duration-200 ease-out hover:border-slate-200 hover:soft-shadow-subtle"
+              >
+                <div class="flex items-baseline justify-between gap-2">
+                  <h2 class="text-[13px] sm:text-sm font-normal tracking-[0.05em] text-slate-900">
+                    <span class="item-name"></span>
+                  </h2>
+                  <span class="text-[10px] text-slate-400 font-light whitespace-nowrap">
+                    <span class="opacity-80">位置坐标</span>
+                  </span>
+                </div>
+                <p class="text-[11px] sm:text-xs text-slate-500/90 font-light leading-relaxed">
+                  <span class="item-location"></span>
+                </p>
+                <p class="item-hint text-[11px] sm:text-[11px] text-slate-400 font-light leading-relaxed hidden">
+                  <span class="opacity-70">提示 · </span><span class="hint-text"></span>
+                </p>
+              </div>
+            </template>
+          </section>
+        </div>
+      </main>
+
+      <!-- 页脚 -->
+      <footer class="py-5 sm:py-6 flex items-center justify-center text-[10px] sm:text-[11px] text-slate-400 font-extralight tracking-[0.28em] uppercase">
+        <button
+          id="signature"
+          type="button"
+          class="relative inline-flex items-center justify-center px-4 py-1 rounded-full hover:text-slate-700 transition-colors"
+        >
+          <span class="absolute inset-x-2 bottom-0 h-px bg-gradient-to-r from-transparent via-slate-400/50 to-transparent opacity-0 group-hover:opacity-100"></span>
+          <span class="tracking-[0.28em]">
+            ENGINEERED BY CLUCE
+          </span>
+        </button>
+      </footer>
+
+      <!-- 浮动添加按钮 -->
+      <button
+        id="addButton"
+        type="button"
+        class="fixed bottom-5 right-5 sm:bottom-7 sm:right-7 z-20 flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-white/90 border border-slate-200/80 text-slate-400 text-base sm:text-lg shadow-[0_10px_30px_rgba(15,23,42,0.16)] hover:text-slate-700 hover:bg-white transition-all duration-200 ease-out"
+        aria-label="添加新物品"
+      >
+        ＋
+      </button>
+    </div>
+
+    <!-- 添加物品模态框 -->
+    <div
+      id="modal"
+      class="fixed inset-0 z-30 hidden items-center justify-center bg-slate-900/25 backdrop-blur-sm"
+      aria-hidden="true"
+    >
+      <div
+        class="w-full max-w-sm sm:max-w-md mx-4 rounded-3xl bg-white/95 border border-slate-200/80 soft-shadow-subtle px-5 sm:px-7 py-5 sm:py-6 space-y-4 sm:space-y-5"
+      >
+        <div class="flex items-center justify-between">
+          <div class="space-y-1">
+            <h2 class="text-sm sm:text-base font-light tracking-[0.18em] text-slate-900 uppercase">
+              新增物品
+            </h2>
+            <p class="text-[11px] text-slate-400 font-light">
+              把这件物品「固定」在你记忆的地图上。
+            </p>
+          </div>
+          <button
+            id="closeModal"
+            type="button"
+            class="flex h-7 w-7 items-center justify-center rounded-full border border-slate-200/80 text-slate-400 hover:text-slate-700 hover:bg-slate-50 transition-colors"
+          >
+            <span class="text-xs">×</span>
+          </button>
+        </div>
+
+        <form id="addForm" class="space-y-3.5 sm:space-y-4">
+          <div class="space-y-1.5">
+            <label
+              for="itemName"
+              class="block text-[11px] text-slate-500 font-light tracking-[0.16em] uppercase"
+              >物品名称</label
+            >
+            <input
+              id="itemName"
+              type="text"
+              required
+              autocomplete="off"
+              class="w-full rounded-2xl border border-slate-200/80 bg-slate-50/40 px-3.5 py-2.5 text-[13px] text-slate-900 placeholder:text-slate-300 outline-none focus:bg-white focus:border-slate-300 focus:ring-1 focus:ring-slate-200 transition-colors"
+              placeholder="例如：备用钥匙 / 护照 / 充电器"
+            />
+          </div>
+
+          <div class="space-y-1.5">
+            <label
+              for="itemLocation"
+              class="block text-[11px] text-slate-500 font-light tracking-[0.16em] uppercase"
+              >存放位置</label
+            >
+            <input
+              id="itemLocation"
+              type="text"
+              required
+              autocomplete="off"
+              class="w-full rounded-2xl border border-slate-200/80 bg-slate-50/40 px-3.5 py-2.5 text-[13px] text-slate-900 placeholder:text-slate-300 outline-none focus:bg-white focus:border-slate-300 focus:ring-1 focus:ring-slate-200 transition-colors"
+              placeholder="例如：玄关左侧第二个抽屉"
+            />
+          </div>
+
+          <div class="space-y-1.5">
+            <label
+              for="itemHint"
+              class="block text-[11px] text-slate-500 font-light tracking-[0.16em] uppercase"
+              >提示（可选）</label
+            >
+            <input
+              id="itemHint"
+              type="text"
+              autocomplete="off"
+              class="w-full rounded-2xl border border-slate-200/80 bg-slate-50/40 px-3.5 py-2.5 text-[13px] text-slate-900 placeholder:text-slate-300 outline-none focus:bg-white focus:border-slate-300 focus:ring-1 focus:ring-slate-200 transition-colors"
+              placeholder="例如：藏在蓝色的盒子里"
+            />
+          </div>
+
+          <div class="pt-1 flex items-center justify-between gap-3">
+            <button
+              type="button"
+              id="cancelModal"
+              class="flex-1 inline-flex items-center justify-center rounded-2xl border border-slate-200/90 bg-white px-3 py-2.5 text-[12px] text-slate-500 font-light hover:bg-slate-50 transition-colors"
+            >
+              取消
+            </button>
+            <button
+              type="submit"
+              class="flex-[1.4] inline-flex items-center justify-center rounded-2xl border border-slate-900 bg-slate-900 px-3 py-2.5 text-[12px] text-white font-light tracking-[0.16em] uppercase hover:bg-black transition-colors"
+            >
+              确认收录
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Toast 提示 -->
+    <div
+      id="toast"
+      class="pointer-events-none fixed inset-x-0 top-4 z-40 flex justify-center px-4 sm:px-0"
+      aria-live="polite"
+    >
+      <div
+        class="pointer-events-auto hidden max-w-md rounded-2xl bg-slate-900/95 text-slate-50 px-4 sm:px-5 py-3.5 sm:py-3 shadow-[0_18px_45px_rgba(15,23,42,0.45)] border border-slate-700/60 backdrop-blur"
+      >
+        <p class="text-xs sm:text-sm font-light leading-relaxed">
+          Cluce 祝你生活愉快，再也不为找东西烦恼。
+        </p>
+      </div>
+    </div>
+
+    <script>
+      (function () {
+        const STORAGE_KEY = "the-finder-items";
+
+        /** 预设初始数据 */
+        const presetItems = [
+          {
+            name: "备用钥匙",
+            location: "玄关左侧第二个抽屉",
+            hint: "藏在蓝色的盒子里"
+          },
+          {
+            name: "户口本",
+            location: "主卧衣柜最上层文件盒",
+            hint: "灰色拉链布袋内"
+          },
+          {
+            name: "护照",
+            location: "书房白色文件柜中层",
+            hint: "透明 L 型文件袋里，夹着登机牌"
+          },
+          {
+            name: "旧发票",
+            location: "餐边柜右侧第三个抽屉",
+            hint: "棕色牛皮纸文件袋"
+          },
+          {
+            name: "常用充电线",
+            location: "客厅电视柜下方收纳盒",
+            hint: "标注「数码线」的小盒子"
+          },
+          {
+            name: "备用电池",
+            location: "厨房冰箱旁窄柜第二层",
+            hint: "透明塑料小盒内"
+          }
+        ];
+
+        const searchInput = document.getElementById("searchInput");
+        const resultsContainer = document.getElementById("resultsContainer");
+        const resultCount = document.getElementById("resultCount");
+        const clearSearchBtn = document.getElementById("clearSearchBtn");
+        const itemTemplate = document.getElementById("itemTemplate");
+        const emptyStateTemplate = document.getElementById("emptyStateTemplate");
+        const addButton = document.getElementById("addButton");
+        const modal = document.getElementById("modal");
+        const closeModalBtn = document.getElementById("closeModal");
+        const cancelModalBtn = document.getElementById("cancelModal");
+        const addForm = document.getElementById("addForm");
+        const itemNameInput = document.getElementById("itemName");
+        const itemLocationInput = document.getElementById("itemLocation");
+        const itemHintInput = document.getElementById("itemHint");
+        const signatureBtn = document.getElementById("signature");
+        const rainbowLayer = document.getElementById("rainbowLayer");
+        const toast = document.getElementById("toast").firstElementChild;
+
+        let allItems = [];
+        let toastTimer = null;
+        let rainbowTimer = null;
+
+        /** 从 localStorage 读取数据，并和预设合并 */
+        function loadItems() {
+          let stored = [];
+          try {
+            const raw = window.localStorage.getItem(STORAGE_KEY);
+            if (raw) {
+              stored = JSON.parse(raw);
+            }
+          } catch (e) {
+            // ignore parse errors
+          }
+          // 本地数据应优先，同时保留预设中未被覆盖的物品
+          const map = new Map();
+          presetItems.forEach((item) => {
+            map.set(item.name + "::" + item.location, item);
+          });
+          stored.forEach((item) => {
+            map.set(item.name + "::" + item.location, item);
+          });
+          allItems = Array.from(map.values());
+        }
+
+        function persistItems() {
+          try {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(allItems));
+          } catch (e) {
+            // 忽略存储错误（可能是隐私模式）
+          }
+        }
+
+        /** 渲染列表 */
+        function renderList(keyword) {
+          const q = (keyword || "").trim().toLowerCase();
+          const fragment = document.createDocumentFragment();
+          let matched = allItems;
+
+          if (q) {
+            matched = allItems.filter((item) => {
+              const name = (item.name || "").toLowerCase();
+              const location = (item.location || "").toLowerCase();
+              const hint = (item.hint || "").toLowerCase();
+              return (
+                name.includes(q) ||
+                location.includes(q) ||
+                (hint && hint.includes(q))
+              );
+            });
+          }
+
+          resultsContainer.innerHTML = "";
+
+          if (!matched.length) {
+            const emptyNode = emptyStateTemplate.content.cloneNode(true);
+            resultsContainer.appendChild(emptyNode);
+            resultCount.textContent = "0";
+            return;
+          }
+
+          matched.forEach((item) => {
+            const node = itemTemplate.content.cloneNode(true);
+            const nameEl = node.querySelector(".item-name");
+            const locationEl = node.querySelector(".item-location");
+            const hintWrapper = node.querySelector(".item-hint");
+            const hintText = node.querySelector(".hint-text");
+
+            nameEl.textContent = item.name;
+            locationEl.textContent = item.location;
+
+            if (item.hint && item.hint.trim()) {
+              hintWrapper.classList.remove("hidden");
+              hintText.textContent = item.hint;
+            }
+
+            fragment.appendChild(node);
+          });
+
+          resultsContainer.appendChild(fragment);
+          resultCount.textContent = String(matched.length);
+        }
+
+        /** 打开 / 关闭模态框 */
+        function openModal() {
+          modal.classList.remove("hidden");
+          modal.classList.add("flex");
+          // 小延迟，等待布局完成后再聚焦
+          setTimeout(() => {
+            itemNameInput.focus();
+          }, 20);
+        }
+
+        function closeModal() {
+          modal.classList.add("hidden");
+          modal.classList.remove("flex");
+          addForm.reset();
+        }
+
+        /** Toast 展示 */
+        function showToast(message) {
+          if (toastTimer) {
+            clearTimeout(toastTimer);
+          }
+          toast.textContent = message;
+          toast.classList.remove("hidden", "opacity-0");
+          toast.classList.add("opacity-100");
+
+          toastTimer = setTimeout(() => {
+            toast.classList.add("opacity-0");
+            toastTimer = setTimeout(() => {
+              toast.classList.add("hidden");
+              toast.classList.remove("opacity-0", "opacity-100");
+            }, 260);
+          }, 2800);
+        }
+
+        /** 背景彩虹动画触发 */
+        function triggerRainbow() {
+          if (rainbowTimer) {
+            clearTimeout(rainbowTimer);
+          }
+          rainbowLayer.classList.add("active");
+          rainbowTimer = setTimeout(() => {
+            rainbowLayer.classList.remove("active");
+          }, 3200);
+        }
+
+        /** 绑定事件 */
+        function bindEvents() {
+          // 实时搜索
+          searchInput.addEventListener("input", (e) => {
+            renderList(e.target.value);
+          });
+
+          clearSearchBtn.addEventListener("click", () => {
+            if (!searchInput.value) return;
+            searchInput.value = "";
+            renderList("");
+            searchInput.focus();
+          });
+
+          // 打开模态
+          addButton.addEventListener("click", () => {
+            openModal();
+          });
+
+          // 关闭模态
+          [closeModalBtn, cancelModalBtn].forEach((btn) => {
+            btn.addEventListener("click", () => {
+              closeModal();
+            });
+          });
+
+          // 点击遮罩关闭
+          modal.addEventListener("click", (e) => {
+            if (e.target === modal) {
+              closeModal();
+            }
+          });
+
+          // Esc 关闭模态
+          document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && !modal.classList.contains("hidden")) {
+              closeModal();
+            }
+          });
+
+          // 提交表单
+          addForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const name = itemNameInput.value.trim();
+            const location = itemLocationInput.value.trim();
+            const hint = itemHintInput.value.trim();
+
+            if (!name || !location) return;
+
+            allItems.push({ name, location, hint });
+            persistItems();
+            closeModal();
+            renderList(searchInput.value);
+          });
+
+          // 彩蛋：签名点击
+          signatureBtn.addEventListener("click", () => {
+            triggerRainbow();
+            showToast("Cluce 祝你生活愉快，再也不为找东西烦恼。");
+          });
+        }
+
+        /** 初始化 */
+        function init() {
+          loadItems();
+          bindEvents();
+          renderList("");
+        }
+
+        document.addEventListener("DOMContentLoaded", init);
+      })();
+    </script>
+  </body>
+</html>
+
